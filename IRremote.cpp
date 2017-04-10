@@ -123,8 +123,8 @@ int  MATCH_SPACE (int measured_ticks,  int desired_us)
 // As soon as first MARK arrives:
 //   Gap width is recorded; Ready is cleared; New logging starts
 //
-#ifdef IR_TIMER_USE_ESP32
-void IRTimer()
+#if defined(IR_TIMER_USE_ESP32) || defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
+void ISR(void)
 #else
 ISR (TIMER_INTR_NAME)
 #endif
@@ -198,3 +198,16 @@ ISR (TIMER_INTR_NAME)
 				else BLINKLED_OFF() ;   // if no user defined LED pin, turn default LED pin for the hardware on
 	}
 }
+
+
+#if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
+void TC3_Handler(void) {
+  TcCount16* TC = (TcCount16*) TC3;
+  // If this interrupt is due to the compare register matching the timer count
+  // we toggle the LED.
+  if (TC->INTFLAG.bit.MC0 == 1) {
+    TC->INTFLAG.bit.MC0 = 1;
+    ISR();
+  }
+}
+#endif

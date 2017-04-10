@@ -41,6 +41,11 @@
 #	define BLINKLED_ON()   (PORTD |= B00000001)
 #	define BLINKLED_OFF()  (PORTD &= B11111110)
 
+#elif defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
+#	define BLINKLED        LED_BUILTIN
+#	define BLINKLED_ON()   (digitalWrite(LED_BUILTIN, HIGH))
+#	define BLINKLED_OFF()  (digitalWrite(LED_BUILTIN, HIGH))
+
 // No system LED on ESP32, disable blinking
 #elif defined(ESP32)
 #	define BLINKLED        255
@@ -146,6 +151,11 @@
 
 #elif defined(ESP32)
 	#define IR_TIMER_USE_ESP32
+
+#elif defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
+        #define SAMD_TIMER_IRFREQ 20000
+        #define TIMER_PRESCALER_DIV 64
+
 #else
 // Arduino Duemilanove, Diecimila, LilyPad, Mini, Fio, Nano, etc
 // ATmega48, ATmega88, ATmega168, ATmega328
@@ -584,6 +594,18 @@
 #define TIMER_ENABLE_INTR    
 #define TIMER_DISABLE_INTR   
 #define TIMER_INTR_NAME      
+
+#elif defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
+  // use timer 3 hardcoded at this time
+
+  #define TIMER_RESET
+  #define TIMER_ENABLE_PWM     
+  #define TIMER_DISABLE_PWM
+  #define TIMER_ENABLE_INTR    NVIC_EnableIRQ(TC3_IRQn);    
+  #define TIMER_DISABLE_INTR   NVIC_DisableIRQ(TC3_IRQn);
+  #define TIMER_INTR_NAME      TC3_Handler
+
+  void startTimer(int frequencyHz);
 
 //---------------------------------------------------------
 // Unknown Timer
